@@ -18,23 +18,23 @@
  */
 package org.apache.pulsar.functions.worker;
 
-import java.nio.charset.StandardCharsets;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
+import org.testng.annotations.Test;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.commons.io.IOUtils;
-import org.testng.annotations.Test;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -80,6 +80,9 @@ public class PulsarFunctionTestUtils {
         Arrays.asList(metrics.split("\n")).forEach(line -> {
             if (line.isEmpty() || line.startsWith("#")) {
                 return;
+            }
+            if (line.endsWith("\r")) {
+                line = line.substring(0, line.length() - 1);
             }
             Matcher matcher = pattern.matcher(line);
             checkArgument(matcher.matches(), "Cannot parse metrics from line: '" + line + "'");

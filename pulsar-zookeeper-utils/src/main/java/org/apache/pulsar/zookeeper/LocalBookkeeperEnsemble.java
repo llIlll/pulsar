@@ -23,27 +23,6 @@
 
 package org.apache.pulsar.zookeeper;
 
-import static org.apache.bookkeeper.stream.protocol.ProtocolConstants.DEFAULT_STREAM_CONF;
-import static org.apache.commons.io.FileUtils.cleanDirectory;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.lang.reflect.Method;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 import org.apache.bookkeeper.bookie.BookieException.InvalidCookieException;
 import org.apache.bookkeeper.bookie.storage.ldb.DbLedgerStorage;
 import org.apache.bookkeeper.clients.StorageClientBuilder;
@@ -80,6 +59,29 @@ import org.apache.zookeeper.server.ServerCnxn;
 import org.apache.zookeeper.server.ZooKeeperServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.lang.reflect.Method;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
+import static org.apache.bookkeeper.stream.protocol.ProtocolConstants.DEFAULT_STREAM_CONF;
+import static org.apache.commons.io.FileUtils.cleanDirectory;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 public class LocalBookkeeperEnsemble {
     protected static final Logger LOG = LoggerFactory.getLogger(LocalBookkeeperEnsemble.class);
@@ -418,6 +420,7 @@ public class LocalBookkeeperEnsemble {
         conf.setServerNumIOThreads(1);
         conf.setNumLongPollWorkerThreads(1);
         conf.setAllocatorPoolingPolicy(PoolingPolicy.UnpooledHeap);
+        conf.setEntryLogFilePreAllocationEnabled(false);
 
         runZookeeper(1000);
         initializeZookeper();
@@ -503,6 +506,7 @@ public class LocalBookkeeperEnsemble {
 
         zkc.close();
         zks.shutdown();
+        zks.getTxnLogFactory().close();
         serverFactory.shutdown();
 
         if (zkDataCleanupManager != null) {
